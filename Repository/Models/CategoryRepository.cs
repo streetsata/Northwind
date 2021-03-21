@@ -6,11 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Repository.Models
 {
     public class CategoryRepository : RepositoryBase<Category>, ICategoryRepository
     {
+        #region Sync Methods
         public CategoryRepository(NorthwindContext northwindContext)
             : base(northwindContext)
         {
@@ -19,6 +21,11 @@ namespace Repository.Models
         public void CreateCategory(Category category)
         {
             Create(category);
+        }
+
+        public void DeleteCategory(Category category)
+        {
+            Delete(category);
         }
 
         public IEnumerable<Category> GetAllCategories()
@@ -45,5 +52,28 @@ namespace Repository.Models
         {
             Update(category);
         }
+        #endregion
+
+        #region Async Methods
+        public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
+        {
+            return await FindAll()
+                 .OrderBy(c => c.CategoryName)
+                 .ToListAsync();
+        }
+
+        public async Task<Category> GetCategoryByIdAsync(int categoryId)
+        {
+            return await FindByCondition(category => category.CategoryID.Equals(categoryId))
+                  .FirstOrDefaultAsync();
+        }
+
+        public async Task<Category> GetCategoryWithDetailsAsync(int categoryId)
+        {
+            return await FindByCondition(category => category.CategoryID.Equals(categoryId))
+               .Include(p => p.Products)
+               .FirstOrDefaultAsync();
+        }
+        #endregion
     }
 }

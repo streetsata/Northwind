@@ -25,6 +25,7 @@ namespace Northwind
             services.ConfigureRepositoryWrapper();
             services.ConfigureSQLContext(Configuration);
             services.AddAutoMapper(typeof(Startup));
+            services.ConfigureSwaggerGen();
 
             services.AddControllers();
         }
@@ -45,12 +46,15 @@ namespace Northwind
 
             app.UseAuthorization();
 
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c => 
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            });
+
             app.UseEndpoints(endpoints =>
             {
-                //endpoints.MapControllerRoute(
-                //    name: "default",
-                //    pattern: "{controller=Category}/{action=Index}/{id?}"
-                //    );
                 endpoints.MapControllers();
             });
         }

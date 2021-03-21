@@ -40,5 +40,13 @@ namespace Northwind
         {
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
         }
+
+        public static void ConfigureSwaggerGen(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Northwind API", Version = "v1" });
+            });
+        }
     }
 }

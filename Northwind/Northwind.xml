@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Northwind</name>
+    </assembly>
+    <members>
+        <member name="M:Northwind.Controllers.CategoryController.GetAllCategories">
+            <summary>
+            Gets the list of all Categories
+            </summary>
+            <returns>The list of Categories</returns>
+        </member>
+        <member name="M:Northwind.Controllers.CategoryController.GetCategoryById(System.Int32)">
+            <summary>
+            Gets Category by id
+            </summary>
+            <param name="id">Needed category by id</param>
+            <returns>Category by id</returns>
+        </member>
+    </members>
+</doc>

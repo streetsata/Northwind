@@ -5,6 +5,7 @@ using Repository.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Repository
 {
@@ -48,6 +49,11 @@ namespace Repository
         public void Save()
         {
             _northwindContext.SaveChanges();
+        }
+
+        public async Task SaveAsync()
+        {
+            await _northwindContext.SaveChangesAsync();
         }
     }
 }

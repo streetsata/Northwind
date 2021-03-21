@@ -26,12 +26,16 @@ namespace Northwind.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Gets the list of all Categories
+        /// </summary>
+        /// <returns>The list of Categories</returns>
         [HttpGet]
-        public IActionResult GetAllCategories()
+        public async Task<IActionResult> GetAllCategories()
         {
             try
             {
-                var categories = _repository.Category.GetAllCategories();
+                var categories = await _repository.Category.GetAllCategoriesAsync();
 
                 _logger.LogInfo($"Returned all categories from DB");
 
@@ -47,13 +51,17 @@ namespace Northwind.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Gets Category by id
+        /// </summary>
+        /// <param name="id">Needed category by id</param>
+        /// <returns>Category by id</returns>
         [HttpGet("{id}", Name = "CategoryById")]
-        public IActionResult GetCategoryById(int id)
+        public async Task<IActionResult> GetCategoryById(int id)
         {
             try
             {
-                var category = _repository.Category.GetCategoryById(id);
+                var category = await _repository.Category.GetCategoryByIdAsync(id);
 
                 if (category == null)
                 {
@@ -76,11 +84,11 @@ namespace Northwind.Controllers
         }
 
         [HttpGet("{id}/product")]
-        public IActionResult GetCategoryWithDetails(int id)
+        public async Task<IActionResult> GetCategoryWithDetails(int id)
         {
             try
             {
-                var category = _repository.Category.GetCategoryWithDetails(id);
+                var category = await _repository.Category.GetCategoryWithDetailsAsync(id);
 
                 if (category == null)
                 {
@@ -103,7 +111,7 @@ namespace Northwind.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateCategory([FromBody]CategoryForCreationDto category)
+        public async Task<IActionResult> CreateCategory([FromBody]CategoryForCreationDto category)
         {
             try
             {
@@ -122,7 +130,7 @@ namespace Northwind.Controllers
                 var categoryEntity = _mapper.Map<Category>(category);
 
                 _repository.Category.CreateCategory(categoryEntity);
-                _repository.Save();
+                await _repository.SaveAsync();
 
                 var createdCategory = _mapper.Map<CategoryDto>(categoryEntity);
 
@@ -136,7 +144,7 @@ namespace Northwind.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateCategory(int id, [FromBody] CategoryForUpdateDto category)
+        public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryForUpdateDto category)
         {
             try
             {
@@ -152,7 +160,7 @@ namespace Northwind.Controllers
                     return BadRequest("Invalid object model");
                 }
 
-                var categoryEntity = _repository.Category.GetCategoryById(id);
+                var categoryEntity = await _repository.Category.GetCategoryByIdAsync(id);
 
                 if (categoryEntity == null)
                 {
@@ -163,7 +171,7 @@ namespace Northwind.Controllers
                 _mapper.Map(category, categoryEntity);
 
                 _repository.Category.UpdateCategory(categoryEntity);
-                _repository.Save();
+                await _repository.SaveAsync();
 
                 return NoContent();
             }
@@ -171,6 +179,39 @@ namespace Northwind.Controllers
             {
 
                 _logger.LogError($"Somthing went wrong inside UpdateCategory action: {ex.Message}\tStackTrace: {ex.StackTrace}");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            try
+            {
+                var category = await _repository.Category.GetCategoryByIdAsync(id);
+
+                if (category == null)
+                {
+                    _logger.LogError($"Category with id: {id}, hasn't been found in DB");
+                    return NotFound();
+                }
+
+                if (_repository.Product.ProductsByCategory(id).Any())
+                {
+                    _logger.LogError($"Cannot delete category with id: {id}. It has related products. Delete those products first");
+                    return BadRequest("Cannot delete category. It has related products. If need delete products first");
+                }
+
+                _repository.Category.DeleteCategory(category);
+                await _repository.SaveAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                string innerEx = ex.InnerException != null ? ex.InnerException.Message : "";
+                _logger.LogError($"Somthing went wrong inside DeleteCategory action: {ex.Message}\tStackTrace: {ex.StackTrace}\t" +
+                    $"Inner Exception: {innerEx}");
                 return StatusCode(500, "Internal server error");
             }
         }
